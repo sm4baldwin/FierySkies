@@ -1,8 +1,8 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { RootState, AppThunk } from '../../store'
+import { RootState, AppThunk, AppDispatch } from '../../store'
 import { firestore } from '../../firebaseConfig'
 import { doc, getDoc, setDoc, onSnapshot, } from "firebase/firestore"
-import { inRoom } from '../user/userSlice'
+import { inRoom, makeLobbyCreator } from '../user/userSlice'
 
 export interface Idatabase {
   data: {
@@ -18,7 +18,7 @@ export interface Idatabase {
 const initialState: Idatabase = {
   data: {
     room: {
-      id: 'default',
+      id: '',
       players: [],
       viewers: []
     }
@@ -31,18 +31,21 @@ const initialState: Idatabase = {
 // will call the thunk with the `dispatch` function as the first argument. Async
 // code can then be executed and other actions can be dispatched. Thunks are
 // typically used to make async requests.
-export const joinRoom = createAsyncThunk(
+export const joinRoom = createAsyncThunk<any, any, {dispatch: AppDispatch, state: RootState}>(
   'database/joinRoom',
-  async (roomID: string, {dispatch}) => {
+  async (roomID: string, {dispatch, getState}) => {
     const docRef = doc(firestore, "lobbies", roomID)
     const docSnap = await getDoc(docRef)
     
     if (docSnap.exists()) {
-      await setDoc(docRef, {newUser: 'Stephen'}, { merge: true })
+      console.log("Joining existing lobby!")
+      await setDoc(docRef, {newPlayer: 'Stephen'}, { merge: true })
     } else {
       // doc.data() will be undefined in this case
-      console.log("No such document!")
-      await setDoc(docRef, {newUser: 'Stephen Baldwin'})
+      console.log("Creating new lobby!")
+      const state = getState()
+      await setDoc(docRef, {lobbyCreator: state.user.data.playerTag})
+      dispatch(makeLobbyCreator())
     }
     dispatch(inRoom(true))
     return roomID
@@ -88,8 +91,7 @@ export const startRoomListener = (): AppThunk => (dispatch, getState) => {
 
   const unsubscribe = onSnapshot(doc(firestore, "lobbies", roomID), (doc) => {
     const roomData = doc.data()
-    if (roomData) {
-      console.log(roomData.members)
+    if (roomData && roomData.members) {
       dispatch(updateRoomPlayers(roomData.members.players))
       dispatch(updateRoomViewers(roomData.members.viewers))
     }

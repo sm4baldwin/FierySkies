@@ -28,7 +28,7 @@ export const CentralRift = () => {
         <FlexDiv>
             <RFC axis='column' align='center' justify='flex-start' css='height: 100%;'>
 
-            <StyledChatBubble>Welcome to Thracia's central Rift. We are preparing to send the next envoy. Please join your other representative and prepare yourself for the transfer.</StyledChatBubble>
+            <StyledChatBubble>Welcome to Thracia's central Rift. We are preparing to send the next envoy. Please join your respective envoy and begin preparations for the transfer.</StyledChatBubble>
             <StyledBigButton onClick={() => setLobbyPromptToggled(prev => !prev)}>
                 Rift Transfer
             </StyledBigButton>

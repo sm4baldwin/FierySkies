@@ -1,9 +1,32 @@
-import * as functions from "firebase-functions";
+// The Cloud Functions for Firebase SDK to create Cloud Functions and setup triggers.
+const functions = require('firebase-functions')
 
-// // Start writing Firebase Functions
-// // https://firebase.google.com/docs/functions/typescript
-//
-// export const helloWorld = functions.https.onRequest((request, response) => {
-//   functions.logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+// The Firebase Admin SDK to access Firestore.
+const admin = require('firebase-admin')
+admin.initializeApp()
+
+exports.createLobby = functions.firestore.document("lobbies/{lobbyID}")
+    .onCreate((snap: any, context: any) => {
+        const data = snap.data()
+        if (data) {
+            let timeCreated = new Date()
+            const initialLobbyInfo = {
+                envoyRepresentative: data.lobbyCreator,
+                gameMeta: {
+                    gameID: "default",
+                    gameStarted: false,
+                    gameMode: 'default'
+                },
+                members: {
+                    players: [
+                        data.lobbyCreator
+                    ],
+                    viewers: [],
+                },
+                lobbyCreated: timeCreated.getTime()
+            }
+            return snap.ref.update(initialLobbyInfo)
+        } else {
+            return null
+        }
+    })
