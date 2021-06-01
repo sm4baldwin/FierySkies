@@ -95,17 +95,17 @@ export const ThemeGlobalStyle = createGlobalStyle<{theme: ThemeType}>`
 
     button {
         all: revert;
-        background: ${ ({theme}) => theme.colors.primary[5] };
+        background: ${ ({theme}) => theme.colors.primary[6] };
         color: white;
         text-transform: uppercase;
         border: none;
         width: fit-content;
         height: fit-content;
-        letter-spacing: .1em;
+        letter-spacing: .15em;
         padding: .7em;
         font-size: ${ ({ theme }) => theme.sizes[5]};
-        font-weight: 400;
-        border-radius: ${ ({ theme }) => theme.sizes[2]};
+        font-weight: 600;
+        border-radius: ${ ({ theme }) => theme.sizes[3]};
         &:active, &:hover {
             background: ${ ({theme}) => theme.colors.primary[4] };
         }
@@ -119,6 +119,7 @@ export const ThemeGlobalStyle = createGlobalStyle<{theme: ThemeType}>`
         letter-spacing: 0.05em;
         margin: 0;
         text-align: left;
+        font-weight: 600;
     }
 
     h1 {
@@ -133,5 +134,6 @@ export const ThemeGlobalStyle = createGlobalStyle<{theme: ThemeType}>`
     span {
         color: ${({theme}) => theme.colors.coolGrey[4]};
         text-align: left;
+        font-size: ${ ({ theme }) => theme.sizes[5]};
     }
 `

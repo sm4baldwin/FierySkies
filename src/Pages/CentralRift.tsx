@@ -42,7 +42,7 @@ export const CentralRift = () => {
                     <RFC axis='column' align='center'>
                         <h1>Please enter the name of the envoy you will transfer with</h1>
                         <Spacer />
-                        <input type='text' value={lobbyPrompt} onChange={(e) => {
+                        <StyledInput type='text' value={lobbyPrompt} onChange={(e) => {
                             e.preventDefault()
                             setLobbyPrompt(e.target.value)
                         }} />
@@ -66,7 +66,7 @@ const StyledBackdrop = styled.div`
     width: 100%;
     height: 100%;
     z-index: 4;
-    background: rgba(255, 255, 255, 0.5);
+    background: rgba(45,58,140, .5);
     position: fixed;
     top: 0;
     right: 0;
@@ -76,17 +76,25 @@ const StyledLobbyForm = styled.form`
     border-radius: ${ ({ theme }) => theme.sizes[3]} 0 ${ ({ theme }) => theme.sizes[3]}0;
     background-color: ${({ theme }) => theme.colors.white};
     padding: ${ ({ theme }) => theme.sizes[4]};
+    max-width: 80%;
     z-index: 5;
     position: fixed;
     top: 10rem;
     margin: 0 auto;
 `
+const StyledInput = styled.input`
+    font-size: ${ ({ theme }) => theme.sizes['main']};
+    color: ${ ({ theme }) => theme.colors.coolGrey[3] };
+`
 const StyledBigButton = styled.button`
     position: fixed;
-    top: 12.5rem;
+    top: 18.5rem;
     min-width: 6rem;
     font-size: ${ ({ theme }) => theme.sizes['main']};
     width: auto;
+    @media ${({theme}) => theme.breakpoints.mediaQueries.laptop} {
+        top: 12.5rem;
+    }
 `
 const StyledButton = styled.button`
     min-width: 4rem;

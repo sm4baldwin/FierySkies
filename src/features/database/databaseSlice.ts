@@ -44,7 +44,7 @@ export const joinRoom = createAsyncThunk<any, any, {dispatch: AppDispatch, state
       // doc.data() will be undefined in this case
       console.log("Creating new lobby!")
       const state = getState()
-      await setDoc(docRef, {lobbyCreator: state.user.data.playerTag})
+      await setDoc(docRef, {lobbyCreator: state.user.data.userInfo.playerTag ? state.user.data.userInfo.playerTag : 'default'})
       dispatch(makeLobbyCreator())
     }
     dispatch(inRoom(true))

@@ -1,3 +1,4 @@
+import { Timestamp } from '@firebase/firestore'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from '../../store'
 
@@ -6,7 +7,15 @@ export interface Iuser {
     inRoom: boolean,
     inGame: boolean,
     lobbyCreator: boolean,
-    playerTag: string
+    userInfo: 
+      {
+        userID: string | undefined,
+        playerTag: string | undefined,
+        activeLobby: string | undefined,
+        activeGames: Array<{gameID: string, gameStarted: Timestamp}>,
+        
+      },
+
   }
   status: 'idle' | 'loading' | 'failed';
 }
@@ -16,7 +25,12 @@ const initialState: Iuser = {
     inRoom: false,
     inGame: false,
     lobbyCreator: false,
-    playerTag: 'Default Player Tag'
+    userInfo: {
+      userID: undefined,
+      playerTag: undefined,
+      activeLobby: undefined,
+      activeGames: [],
+    }
   },
   status: 'idle',
 }
@@ -41,5 +55,6 @@ export const { inRoom, makeLobbyCreator } = userSlice.actions
 // in the slice file. For example: `useSelector((state: RootState) => state.counter.value)`
 export const selectInRoom = (state: RootState) => state.user.data.inRoom
 export const selectLobbyCreator = (state: RootState) => state.user.data.lobbyCreator
+export const selectUserInfo = (state: RootState) => state.user.data.userInfo
 
 export default userSlice.reducer;
