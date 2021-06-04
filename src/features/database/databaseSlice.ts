@@ -1,8 +1,9 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState, AppThunk, AppDispatch } from '../../store'
-import { firestore } from '../../firebaseConfig'
+import { firestore, realtimeDB } from '../../firebaseConfig'
 import { doc, getDoc, setDoc, onSnapshot, } from "firebase/firestore"
-import { inRoom, makeLobbyCreator } from '../user/userSlice'
+import { ref, set, onValue, onDisconnect, serverTimestamp } from "firebase/database"
+import { inRoom, makeLobbyCreator, login } from '../user/userSlice'
 
 export interface Idatabase {
   data: {
@@ -49,6 +50,93 @@ export const joinRoom = createAsyncThunk<any, any, {dispatch: AppDispatch, state
     }
     dispatch(inRoom(true))
     return roomID
+  }
+)
+export const userLogin = createAsyncThunk<any, any, {dispatch: AppDispatch, state: RootState}>(
+  'database/userLogin',
+  async (userInfo: {username: string, pass: string | ''}, {dispatch, getState}) => {
+    const firestoreDocRef = doc(firestore, "users", userInfo.username)
+    const firestoreDocSnap = await getDoc(firestoreDocRef)
+    if (!firestoreDocSnap.exists()) {
+      throw Error(`We don't have your codename in our system, perhaps speak to the Rift Coordinator.`)
+    } else {
+      if (userInfo.pass !== firestoreDocSnap.data().password) {
+        throw Error('This seal is a forgery! Perhaps you provided the wrong one, hmmm?')
+      } else {
+        const realtimeDBuserRef = ref(realtimeDB, 'users/' + userInfo.username)
+        const infoConnectedRef = ref(realtimeDB,'.info/connected')
+        var isOfflineForDatabase = {
+          connectionStatus: 'offline',
+          last_changed: serverTimestamp(),
+        }
+        var isOnlineForDatabase = {
+          connectionStatus: 'online',
+          last_changed: serverTimestamp(),
+        }
+        onValue(infoConnectedRef, (snapshot) => {
+          // If we're not currently connected, don't do anything.
+          if (snapshot.val() === false) {
+            setDoc(firestoreDocRef, {connectionStatus: 'offline'}, { merge: true })
+            return;
+          }
+      
+          // If we are currently connected, then use the 'onDisconnect()' 
+          // method to add a set which will only trigger once this 
+          // client has disconnected by closing the app, 
+          // losing internet, or any other means.
+          onDisconnect(realtimeDBuserRef).set(isOfflineForDatabase).then(() => {
+            set(realtimeDBuserRef, isOnlineForDatabase)
+            setDoc(firestoreDocRef, {connectionStatus: 'online'}, { merge: true })
+          })
+        })
+        dispatch(login(userInfo))
+      }
+    }
+  }
+)
+export const newUserLogin = createAsyncThunk<any, any, {dispatch: AppDispatch, state: RootState}>(
+  'database/newUserLogin',
+  async (userInfo: {username: string, pass: string | ''}, {dispatch}) => {
+    try {
+      const firestoreDocRef = doc(firestore, "users", userInfo.username)
+      const firestoreDocSnap = await getDoc(firestoreDocRef)
+      if (firestoreDocSnap.exists()) {
+        throw Error(`We seem to already have you listed in our records ... interesting. Perhaps you mispoke? Hmmmm?`)
+      } else {
+        await setDoc(firestoreDocRef, {username: userInfo.username, password: userInfo.pass, connectionStatus: 'online'})
+        const realtimeDBuserRef = ref(realtimeDB, 'users/' + userInfo.username)
+        await set(realtimeDBuserRef, {connectionStatus: 'offline'})
+        const infoConnectedRef = ref(realtimeDB,'.info/connected')
+        var isOfflineForDatabase = {
+          connectionStatus: 'offline',
+          last_changed: serverTimestamp(),
+        }
+        var isOnlineForDatabase = {
+          connectionStatus: 'online',
+          last_changed: serverTimestamp(),
+        }
+        onValue(infoConnectedRef, (snapshot) => {
+          // If we're not currently connected, don't do anything.
+          if (snapshot.val() === false) {
+            setDoc(firestoreDocRef, {connectionStatus: 'offline'}, { merge: true })
+            return;
+          }
+      
+          // If we are currently connected, then use the 'onDisconnect()' 
+          // method to add a set which will only trigger once this 
+          // client has disconnected by closing the app, 
+          // losing internet, or any other means.
+          onDisconnect(realtimeDBuserRef).set(isOfflineForDatabase).then(() => {
+            set(realtimeDBuserRef, isOnlineForDatabase)
+            setDoc(firestoreDocRef, {connectionStatus: 'online'}, { merge: true })
+          })
+        })
+        dispatch(login(userInfo))
+      }
+    } catch (error) {
+      console.log(error)
+      return error.message
+    }
   }
 )
 

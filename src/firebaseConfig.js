@@ -3,6 +3,9 @@ import { initializeApp } from 'firebase/app'
 
 // Add the Firebase products that you want to use
 import { getFirestore } from 'firebase/firestore'
+import { getDatabase } from "firebase/database";
+
+
 
 const firebaseConfig = {
     apiKey: "AIzaSyC7UpBZGlE0D4Q3tWtGt4QMPokv5tEtFX0",
@@ -16,3 +19,4 @@ const firebaseConfig = {
   }
 const firebaseApp = initializeApp(firebaseConfig)
 export const firestore = getFirestore(firebaseApp)
+export const realtimeDB = getDatabase(firebaseApp);

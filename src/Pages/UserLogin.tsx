@@ -1,19 +1,16 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { FlexDiv, RFC, Spacer, } from '../Common/helpfulComponents'
 import Slide from '@material-ui/core/Slide'
 
-import { useHistory } from 'react-router-dom'
-
-import { useAppDispatch, useAppSelector } from '../Common/hooks'
-import { joinRoom, selectRoomInfo } from '../features/database/databaseSlice'
-import { selectInRoom } from '../features/user/userSlice'
+import { useAppDispatch } from '../Common/hooks'
+import { userLogin, newUserLogin } from '../features/database/databaseSlice'
 
 import { styled } from '../Contexts/ThemeGlobalAndProvider'
 
 export const UserLogin = () => {
-    const [existingUserIDPrompt, setExistingUserIDPrompt] = useState({id: '', pass: ''})
+    const [existingUserIDPrompt, setExistingUserIDPrompt] = useState({username: '', pass: ''})
     const [existingUserIDPromptToggled, setExistingUserIDPromptToggled] = useState<boolean>(false)
-    const [newUserIDPrompt, setNewUserIDPrompt] = useState({id: '', pass: ''})
+    const [newUserIDPrompt, setNewUserIDPrompt] = useState({username: '', pass: ''})
     const [newUserIDPromptToggled, setNewUserIDPromptToggled] = useState<boolean>(false)
     const dispatch = useAppDispatch()
 
@@ -22,9 +19,11 @@ export const UserLogin = () => {
             <RFC axis='column' align='center' justify='flex-start' css='height: 100%;'>
 
             <StyledChatBubble>Hello! If you are a returning agent please check in with the Rift Overseer, otherwise speak with the Rift Coordinator to verify sponsorship and Rift Alignment capabilities.</StyledChatBubble>
+            <Spacer spaceParam={8} />
             <StyledPortalOverseerButton onClick={() => setExistingUserIDPromptToggled(prev => !prev)}>
                 Rift Overseer <em>(login)</em>
             </StyledPortalOverseerButton>
+            <Spacer spaceParam={5} />
             <StyledRiftPermissionButton onClick={() => setNewUserIDPromptToggled(prev => !prev)}>
                 Rift Coordinator <em>(new user)</em>
             </StyledRiftPermissionButton>
@@ -32,16 +31,16 @@ export const UserLogin = () => {
             <Slide in={existingUserIDPromptToggled} direction='up' mountOnEnter unmountOnExit>
                 <StyledLobbyForm onSubmit={(e) => {
                         e.preventDefault()
-                        console.log(existingUserIDPrompt)
-                        setExistingUserIDPrompt({id: '', pass: ''})
+                        dispatch(userLogin(existingUserIDPrompt))
+                        setExistingUserIDPrompt({username: '', pass: ''})
                     }}>
                     <RFC axis='column' align='center' css='width: 100%;'>
                         <h1 style={{textAlign: 'center'}}>Please provide your Agent Code Name, and if applicable your Sponsor's Seal</h1>
                         <Spacer />
                         <span>Code Name <em>(username)</em></span>
-                        <StyledInput type='text' value={existingUserIDPrompt.id} onChange={(e) => {
+                        <StyledInput type='text' value={existingUserIDPrompt.username} onChange={(e) => {
                             e.preventDefault()
-                            setExistingUserIDPrompt(prev => ({...prev, id: e.target.value}))
+                            setExistingUserIDPrompt(prev => ({...prev, username: e.target.value}))
                         }} />
                         <Spacer />
                         <span>Sponsor's Seal <em>(password ?)</em></span>
@@ -58,22 +57,22 @@ export const UserLogin = () => {
             <Slide in={newUserIDPromptToggled} direction='up' mountOnEnter unmountOnExit>
                 <StyledLobbyForm onSubmit={(e) => {
                         e.preventDefault()
-                        console.log(newUserIDPrompt)
-                        setNewUserIDPrompt({id: '', pass: ''})
+                        dispatch(newUserLogin(newUserIDPrompt))
+                        setNewUserIDPrompt({username: '', pass: ''})
                     }}>
                     <RFC axis='column' align='center' css='width: 100%;'>
                         <h1 style={{textAlign: 'center'}}>Please provide your Agent Code Name and your Sponsor's Seal</h1>
                         <Spacer />
                         <span>Code Name <em>(username)</em></span>
-                        <StyledInput type='text' value={newUserIDPrompt.id} onChange={(e) => {
+                        <StyledInput type='text' value={newUserIDPrompt.username} onChange={(e) => {
                             e.preventDefault()
-                            setNewUserIDPrompt(prev => ({...prev, id: e.target.value, }))
+                            setNewUserIDPrompt(prev => ({...prev, username: e.target.value, }))
                         }} />
                         <Spacer />
                         <span>Seal <em>(password optional)</em></span>
-                        <StyledInput type='text' value={newUserIDPrompt.id} onChange={(e) => {
+                        <StyledInput type='text' value={newUserIDPrompt.pass} onChange={(e) => {
                             e.preventDefault()
-                            setNewUserIDPrompt(prev => ({...prev, id: e.target.value, }))
+                            setNewUserIDPrompt(prev => ({...prev, pass: e.target.value, }))
                         }} />
                         <Spacer />
                         <StyledButton>Verify Rift Alignment</StyledButton>
@@ -114,27 +113,16 @@ const StyledInput = styled.input`
     color: ${ ({ theme }) => theme.colors.coolGrey[3] };
 `
 const StyledPortalOverseerButton = styled.button`
-    position: fixed;
-    top: 24rem;
     min-width: 12rem;
     width: 40%;
     max-width: 18rem;
     font-size: ${ ({ theme }) => theme.sizes[5]};
-    @media ${({theme}) => theme.breakpoints.mediaQueries.laptop} {
-        top: 12.5rem;
-    }
 `
 const StyledRiftPermissionButton = styled.button`
-    position: fixed;
-    top: 29rem;
     min-width: 12rem;
     width: 40%;
     max-width: 18rem;
     font-size: ${ ({ theme }) => theme.sizes[5]};
-    
-    @media ${({theme}) => theme.breakpoints.mediaQueries.laptop} {
-        top: 16.5rem;
-    }
 `
 const StyledButton = styled.button`
     width: 60%;

@@ -18,7 +18,7 @@ function App() {
         <Route exact path='/UserLogin'>
             <UserLogin />
           </Route>
-          {!userInfo.userID && <Route path='/'>
+          {!userInfo.username && <Route path='/'>
             <Redirect to='/UserLogin' />
           </Route>}
           <Route exact path='/'>

@@ -9,7 +9,8 @@ export interface Iuser {
     lobbyCreator: boolean,
     userInfo: 
       {
-        userID: string | undefined,
+        username: string | undefined,
+        pass: string | ''
         playerTag: string | undefined,
         activeLobby: string | undefined,
         activeGames: Array<{gameID: string, gameStarted: Timestamp}>,
@@ -26,7 +27,8 @@ const initialState: Iuser = {
     inGame: false,
     lobbyCreator: false,
     userInfo: {
-      userID: undefined,
+      username: undefined,
+      pass: '',
       playerTag: undefined,
       activeLobby: undefined,
       activeGames: [],
@@ -45,10 +47,14 @@ export const userSlice = createSlice({
     makeLobbyCreator: (state) => {
       state.data.lobbyCreator = true
     },
+    login: (state, action: PayloadAction<{username: string, pass: string | ''}>) => {
+      state.data.userInfo.username = action.payload.username
+      state.data.userInfo.pass = action.payload.pass
+    }
   },
 })
 
-export const { inRoom, makeLobbyCreator } = userSlice.actions
+export const { inRoom, makeLobbyCreator, login } = userSlice.actions
 
 // The function below is called a selector and allows us to select a value from
 // the state. Selectors can also be defined inline where they're used instead of
