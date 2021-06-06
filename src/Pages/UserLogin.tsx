@@ -1,10 +1,12 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+
+import { useHistory } from 'react-router-dom'
+
+import { useAppDispatch, useAppSelector } from '../Common/hooks'
+import { userLogin, newUserLogin, selectLoginStatus, selectLoginError } from '../features/database/databaseSlice'
+
 import { FlexDiv, RFC, Spacer, } from '../Common/helpfulComponents'
 import Slide from '@material-ui/core/Slide'
-
-import { useAppDispatch } from '../Common/hooks'
-import { userLogin, newUserLogin } from '../features/database/databaseSlice'
-
 import { styled } from '../Contexts/ThemeGlobalAndProvider'
 
 export const UserLogin = () => {
@@ -13,12 +15,22 @@ export const UserLogin = () => {
     const [newUserIDPrompt, setNewUserIDPrompt] = useState({username: '', pass: ''})
     const [newUserIDPromptToggled, setNewUserIDPromptToggled] = useState<boolean>(false)
     const dispatch = useAppDispatch()
+    const history = useHistory()
+
+    const loginStatus = useAppSelector(selectLoginStatus)
+    const loginError = useAppSelector(selectLoginError)
+
+    useEffect(() => {
+        if (loginStatus === 'succeeded') {
+            history.push('/')
+        }
+    }, [loginStatus, history])
 
     return (
         <FlexDiv>
             <RFC axis='column' align='center' justify='flex-start' css='height: 100%;'>
 
-            <StyledChatBubble>Hello! If you are a returning agent please check in with the Rift Overseer, otherwise speak with the Rift Coordinator to verify sponsorship and Rift Alignment capabilities.</StyledChatBubble>
+            <StyledChatBubble>{loginStatus === 'pending' ? `scribble scribble scratch scribble` : loginError ? loginError : `Hello! If you are a returning agent please check in with the Rift Overseer, otherwise speak with the Rift Coordinator to verify sponsorship and Rift Alignment capabilities.`}</StyledChatBubble>
             <Spacer spaceParam={8} />
             <StyledPortalOverseerButton onClick={() => setExistingUserIDPromptToggled(prev => !prev)}>
                 Rift Overseer <em>(login)</em>
@@ -32,6 +44,8 @@ export const UserLogin = () => {
                 <StyledLobbyForm onSubmit={(e) => {
                         e.preventDefault()
                         dispatch(userLogin(existingUserIDPrompt))
+                        setExistingUserIDPromptToggled(false)
+                        setNewUserIDPromptToggled(false)
                         setExistingUserIDPrompt({username: '', pass: ''})
                     }}>
                     <RFC axis='column' align='center' css='width: 100%;'>
@@ -58,6 +72,8 @@ export const UserLogin = () => {
                 <StyledLobbyForm onSubmit={(e) => {
                         e.preventDefault()
                         dispatch(newUserLogin(newUserIDPrompt))
+                        setExistingUserIDPromptToggled(false)
+                        setNewUserIDPromptToggled(false)
                         setNewUserIDPrompt({username: '', pass: ''})
                     }}>
                     <RFC axis='column' align='center' css='width: 100%;'>

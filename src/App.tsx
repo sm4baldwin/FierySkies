@@ -7,18 +7,19 @@ import { UserLogin } from './Pages/UserLogin'
 
 import { FlexDiv } from './Common/helpfulComponents'
 import { useAppSelector } from './Common/hooks'
-import { selectUserInfo } from './features/user/userSlice'
+import { selectLoginStatus } from './features/database/databaseSlice'
 
 
 function App() {
-  const userInfo = useAppSelector(selectUserInfo)
+  const loginStatus = useAppSelector(selectLoginStatus)
+
   return (
     <FlexDiv>
         <Switch>
-        <Route exact path='/UserLogin'>
+          <Route exact path='/UserLogin'>
             <UserLogin />
           </Route>
-          {!userInfo.username && <Route path='/'>
+          {loginStatus !== 'succeeded' && <Route path='/'>
             <Redirect to='/UserLogin' />
           </Route>}
           <Route exact path='/'>

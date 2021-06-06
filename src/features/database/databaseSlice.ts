@@ -13,9 +13,11 @@ export interface Idatabase {
       viewers: Array<string>
     }
   }
-  status: 'idle' | 'pending' | 'succeeded' | 'failed',
+  loginStatus: 'idle' | 'pending' | 'succeeded' | 'failed',
+  loginError: string | undefined,
+  joinRoomStatus: 'idle' | 'pending' | 'succeeded' | 'failed',
+  joinRoomError: string | undefined,
 }
-
 const initialState: Idatabase = {
   data: {
     room: {
@@ -24,14 +26,12 @@ const initialState: Idatabase = {
       viewers: []
     }
   },
-  status: 'idle',
+  loginStatus: 'idle',
+  loginError: undefined,
+  joinRoomStatus: 'idle',
+  joinRoomError: undefined,
 }
 
-// The function below is called a thunk and allows us to perform async logic. It
-// can be dispatched like a regular action: `dispatch(incrementAsync(10))`. This
-// will call the thunk with the `dispatch` function as the first argument. Async
-// code can then be executed and other actions can be dispatched. Thunks are
-// typically used to make async requests.
 export const joinRoom = createAsyncThunk<any, any, {dispatch: AppDispatch, state: RootState}>(
   'database/joinRoom',
   async (roomID: string, {dispatch, getState}) => {
@@ -54,50 +54,54 @@ export const joinRoom = createAsyncThunk<any, any, {dispatch: AppDispatch, state
 )
 export const userLogin = createAsyncThunk<any, any, {dispatch: AppDispatch, state: RootState}>(
   'database/userLogin',
-  async (userInfo: {username: string, pass: string | ''}, {dispatch, getState}) => {
-    const firestoreDocRef = doc(firestore, "users", userInfo.username)
-    const firestoreDocSnap = await getDoc(firestoreDocRef)
-    if (!firestoreDocSnap.exists()) {
-      throw Error(`We don't have your codename in our system, perhaps speak to the Rift Coordinator.`)
-    } else {
-      if (userInfo.pass !== firestoreDocSnap.data().password) {
-        throw Error('This seal is a forgery! Perhaps you provided the wrong one, hmmm?')
-      } else {
-        const realtimeDBuserRef = ref(realtimeDB, 'users/' + userInfo.username)
-        const infoConnectedRef = ref(realtimeDB,'.info/connected')
-        var isOfflineForDatabase = {
-          connectionStatus: 'offline',
-          last_changed: serverTimestamp(),
-        }
-        var isOnlineForDatabase = {
-          connectionStatus: 'online',
-          last_changed: serverTimestamp(),
-        }
-        onValue(infoConnectedRef, (snapshot) => {
-          // If we're not currently connected, don't do anything.
-          if (snapshot.val() === false) {
-            setDoc(firestoreDocRef, {connectionStatus: 'offline'}, { merge: true })
-            return;
-          }
-      
-          // If we are currently connected, then use the 'onDisconnect()' 
-          // method to add a set which will only trigger once this 
-          // client has disconnected by closing the app, 
-          // losing internet, or any other means.
-          onDisconnect(realtimeDBuserRef).set(isOfflineForDatabase).then(() => {
-            set(realtimeDBuserRef, isOnlineForDatabase)
-            setDoc(firestoreDocRef, {connectionStatus: 'online'}, { merge: true })
-          })
-        })
-        dispatch(login(userInfo))
+  async (userInfo: {username: string, pass: string}, {dispatch, rejectWithValue}) => {
+    try {
+      if (/^\s+$/.test(userInfo.username) || userInfo.username.length < 1) {
+        throw Error('You are silence incarnate! Worship the Void! Just kidding, you have to give your name.')
       }
+      const firestoreDocRef = doc(firestore, "users", userInfo.username)
+      const firestoreDocSnap = await getDoc(firestoreDocRef)
+
+      if (!firestoreDocSnap.exists()) {
+        throw Error(`We don't have your codename in our system, perhaps speak to the Rift Coordinator.`)
+      }
+      if (userInfo.pass !== firestoreDocSnap.data().password) {
+          throw Error('This seal is a forgery! Perhaps you provided the wrong one, hmmm?')
+      } 
+      const realtimeDBuserRef = ref(realtimeDB, 'users/' + userInfo.username)
+      const infoConnectedRef = ref(realtimeDB,'.info/connected')
+      var isOfflineForDatabase = {
+        connectionStatus: 'offline',
+        last_changed: serverTimestamp(),
+      }
+      var isOnlineForDatabase = {
+        connectionStatus: 'online',
+        last_changed: serverTimestamp(),
+      }
+      onValue(infoConnectedRef, (snapshot) => {
+        if (snapshot.val() === false) {
+          setDoc(firestoreDocRef, {connectionStatus: 'offline'}, { merge: true })
+          return;
+        }
+
+        onDisconnect(realtimeDBuserRef).set(isOfflineForDatabase).then(() => {
+          set(realtimeDBuserRef, isOnlineForDatabase)
+          setDoc(firestoreDocRef, {connectionStatus: 'online'}, { merge: true })
+        })
+      })
+      dispatch(login(userInfo))
+    } catch (error) {
+      return rejectWithValue(error.message)
     }
   }
 )
 export const newUserLogin = createAsyncThunk<any, any, {dispatch: AppDispatch, state: RootState}>(
   'database/newUserLogin',
-  async (userInfo: {username: string, pass: string | ''}, {dispatch}) => {
+  async (userInfo: {username: string, pass: string}, {dispatch, rejectWithValue}) => {
     try {
+      if (/^\s+$/.test(userInfo.username) || userInfo.username.length < 1) {
+        throw Error('You are silence incarnate! Worship the Void! Just kidding, you have to give your name.')
+      }
       const firestoreDocRef = doc(firestore, "users", userInfo.username)
       const firestoreDocSnap = await getDoc(firestoreDocRef)
       if (firestoreDocSnap.exists()) {
@@ -116,16 +120,11 @@ export const newUserLogin = createAsyncThunk<any, any, {dispatch: AppDispatch, s
           last_changed: serverTimestamp(),
         }
         onValue(infoConnectedRef, (snapshot) => {
-          // If we're not currently connected, don't do anything.
           if (snapshot.val() === false) {
             setDoc(firestoreDocRef, {connectionStatus: 'offline'}, { merge: true })
             return;
           }
-      
-          // If we are currently connected, then use the 'onDisconnect()' 
-          // method to add a set which will only trigger once this 
-          // client has disconnected by closing the app, 
-          // losing internet, or any other means.
+
           onDisconnect(realtimeDBuserRef).set(isOfflineForDatabase).then(() => {
             set(realtimeDBuserRef, isOnlineForDatabase)
             setDoc(firestoreDocRef, {connectionStatus: 'online'}, { merge: true })
@@ -134,8 +133,7 @@ export const newUserLogin = createAsyncThunk<any, any, {dispatch: AppDispatch, s
         dispatch(login(userInfo))
       }
     } catch (error) {
-      console.log(error)
-      return error.message
+      return rejectWithValue(error.message)
     }
   }
 )
@@ -157,11 +155,34 @@ export const databaseSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(joinRoom.pending, (state) => {
-        state.status = 'pending'
+        state.joinRoomStatus = 'pending'
       })
       .addCase(joinRoom.fulfilled, (state, action: PayloadAction<string>) => {
-        state.status = 'succeeded'
+        state.joinRoomStatus = 'succeeded'
         state.data.room.id = action.payload
+      })
+      .addCase(joinRoom.rejected, (state) => {
+        state.joinRoomStatus = 'failed'
+      })
+      .addCase(userLogin.pending, (state) => {
+        state.loginStatus = 'pending'
+      })
+      .addCase(userLogin.fulfilled, (state) => {
+        state.loginStatus = 'succeeded'
+      })
+      .addCase(userLogin.rejected, (state, action: PayloadAction<any>) => {
+        state.loginStatus = 'failed'
+        state.loginError = action.payload
+      })
+      .addCase(newUserLogin.pending, (state) => {
+        state.loginStatus = 'pending'
+      })
+      .addCase(newUserLogin.fulfilled, (state) => {
+        state.loginStatus = 'succeeded'
+      })
+      .addCase(newUserLogin.rejected, (state, action: PayloadAction<any>) => {
+        state.loginStatus = 'failed'
+        state.loginError = action.payload
       })
   },
 })
@@ -170,6 +191,14 @@ export const { updateRoomPlayers, updateRoomViewers } = databaseSlice.actions
 
 export const selectRoomInfo = (state: RootState) => state.database.data.room
 export const selectRoomMemberCount = (state: RootState) => state.database.data.room.players.length + state.database.data.room.viewers.length
+export const selectLoginStatus = (state: RootState) => state.database.loginStatus
+export const selectLoginError = (state: RootState) => state.database.loginError
+export const selectJoinRoomStatus = (state: RootState) => state.database.joinRoomStatus
+export const selectJoinRoomError = (state: RootState) => state.database.joinRoomError
+
+
+
+
 
 export default databaseSlice.reducer
 
