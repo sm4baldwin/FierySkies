@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useState, useRef } from 'react'
 
 import { useHistory } from 'react-router-dom'
 
 import { useAppDispatch, useAppSelector } from '../Common/hooks'
 import { userLogin, newUserLogin, selectLoginStatus, selectLoginError } from '../features/database/databaseSlice'
 
-import { FlexDiv, RFC, Spacer, } from '../Common/helpfulComponents'
+import { FlexDiv, RFC, Spacer, StyledChatBubble} from '../Common/helpfulComponents'
 import Slide from '@material-ui/core/Slide'
 import { styled } from '../Contexts/ThemeGlobalAndProvider'
+
 
 export const UserLogin = () => {
     const [existingUserIDPrompt, setExistingUserIDPrompt] = useState({username: '', pass: ''})
@@ -20,18 +21,39 @@ export const UserLogin = () => {
     const loginStatus = useAppSelector(selectLoginStatus)
     const loginError = useAppSelector(selectLoginError)
 
+    const existingUserPromptRefInput = useRef<HTMLInputElement>(null)
+    const newUserPromptRefInput = useRef<HTMLInputElement>(null)
+
     useEffect(() => {
         if (loginStatus === 'succeeded') {
             history.push('/')
         }
     }, [loginStatus, history])
+    useLayoutEffect(() => {
+        if (existingUserIDPromptToggled) {
+            setTimeout(() => {
+                if (existingUserPromptRefInput.current !== null) {
+                    existingUserPromptRefInput.current.focus()
+                }
+            }, 0)
+        }
+    }, [existingUserIDPromptToggled])
+    useLayoutEffect(() => {
+        if (newUserIDPromptToggled) {
+            setTimeout(() => {
+                if (newUserPromptRefInput.current !== null) {
+                    newUserPromptRefInput.current.focus()
+                }
+            }, 0)
+        }
+    }, [newUserIDPromptToggled])
 
     return (
         <FlexDiv>
             <RFC axis='column' align='center' justify='flex-start' css='height: 100%;'>
 
             <StyledChatBubble>{loginStatus === 'pending' ? `scribble scribble scratch scribble` : loginError ? loginError : `Hello! If you are a returning agent please check in with the Rift Overseer, otherwise speak with the Rift Coordinator to verify sponsorship and Rift Alignment capabilities.`}</StyledChatBubble>
-            <Spacer spaceParam={8} />
+            <Spacer spaceParam={10} />
             <StyledPortalOverseerButton onClick={() => setExistingUserIDPromptToggled(prev => !prev)}>
                 Rift Overseer <em>(login)</em>
             </StyledPortalOverseerButton>
@@ -52,7 +74,7 @@ export const UserLogin = () => {
                         <h1 style={{textAlign: 'center'}}>Please provide your Agent Code Name, and if applicable your Sponsor's Seal</h1>
                         <Spacer />
                         <span>Code Name <em>(username)</em></span>
-                        <StyledInput type='text' value={existingUserIDPrompt.username} onChange={(e) => {
+                        <StyledInput ref={existingUserPromptRefInput} type='text' value={existingUserIDPrompt.username} onChange={(e) => {
                             e.preventDefault()
                             setExistingUserIDPrompt(prev => ({...prev, username: e.target.value}))
                         }} />
@@ -80,7 +102,7 @@ export const UserLogin = () => {
                         <h1 style={{textAlign: 'center'}}>Please provide your Agent Code Name and your Sponsor's Seal</h1>
                         <Spacer />
                         <span>Code Name <em>(username)</em></span>
-                        <StyledInput type='text' value={newUserIDPrompt.username} onChange={(e) => {
+                        <StyledInput ref={newUserPromptRefInput} type='text' value={newUserIDPrompt.username} onChange={(e) => {
                             e.preventDefault()
                             setNewUserIDPrompt(prev => ({...prev, username: e.target.value, }))
                         }} />
@@ -146,37 +168,4 @@ const StyledButton = styled.button`
     max-width: 16rem;
     font-size: ${ ({ theme }) => theme.sizes[5]};
     text-transform: uppercase;
-`
-const StyledChatBubble = styled.div`
-    position: relative;
-	width: '80%';
-	text-align: center;
-	line-height: 1.4em;
-	background-color: ${ ({ theme }) => theme.colors.white };
-	border: ${ ({ theme }) => theme.sizes[3]} solid ${ ({ theme }) => theme.colors.coolGrey[3] };
-	border-radius: ${ ({ theme }) => theme.sizes[8]} ;
-	padding: ${ ({ theme }) => theme.sizes[6]} ;
-	font-size: ${ ({ theme }) => theme.sizes[6]} ;
-    font-weight: 600;
-    letter-spacing: .1em;
-    color: ${ ({ theme }) => theme.colors.coolGrey[3]};
-
-    &:before, &:after {
-        content: ' ';
-	    position: absolute;
-	    width: 0;
-	    height: 0;
-    }
-    &:before {
-        left: ${ ({ theme }) => theme.sizes[8]};
-	    bottom: -${ ({ theme }) => theme.sizes[10]};
-	    border: ${ ({ theme }) => theme.sizes[8]} solid;
-	    border-color: ${ ({ theme }) => theme.colors.coolGrey[3] } transparent transparent ${ ({ theme }) => theme.colors.coolGrey[3] };
-    }
-    &:after {
-        left: 2.25rem;
-	    bottom: -3.35rem;
-	    border: ${ ({ theme }) => theme.sizes[8]} solid;
-	    border-color: ${ ({ theme }) => theme.colors.white } transparent transparent ${ ({ theme }) => theme.colors.white };
-    }
 `

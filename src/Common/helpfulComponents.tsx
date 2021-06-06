@@ -90,3 +90,37 @@ export const Spacer = ({direction='block', spaceParam='main', testing=true}: IPr
         }></span>
     )
 }
+
+export const StyledChatBubble = styled.div`
+    position: relative;
+    width: '80%';
+    text-align: center;
+    line-height: 1.4em;
+    background-color: ${ ({ theme }) => theme.colors.white };
+    border: ${ ({ theme }) => theme.sizes[3]} solid ${ ({ theme }) => theme.colors.coolGrey[3] };
+    border-radius: ${ ({ theme }) => theme.sizes[8]} ;
+    padding: ${ ({ theme }) => theme.sizes[6]} ;
+    font-size: ${ ({ theme }) => theme.sizes[6]} ;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    color: ${ ({ theme }) => theme.colors.coolGrey[3]};
+
+    &:before, &:after {
+        content: ' ';
+        position: absolute;
+        width: 0;
+        height: 0;
+    }
+    &:before {
+        left: ${ ({ theme }) => theme.sizes[8]};
+        bottom: -${ ({ theme }) => theme.sizes[10]};
+        border: ${ ({ theme }) => theme.sizes[8]} solid;
+        border-color: ${ ({ theme }) => theme.colors.coolGrey[3] } transparent transparent ${ ({ theme }) => theme.colors.coolGrey[3] };
+    }
+    &:after {
+        left: 2.25rem;
+        bottom: -3.35rem;
+        border: ${ ({ theme }) => theme.sizes[8]} solid;
+        border-color: ${ ({ theme }) => theme.colors.white } transparent transparent ${ ({ theme }) => theme.colors.white };
+    }
+`

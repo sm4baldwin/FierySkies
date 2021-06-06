@@ -102,6 +102,9 @@ export const newUserLogin = createAsyncThunk<any, any, {dispatch: AppDispatch, s
       if (/^\s+$/.test(userInfo.username) || userInfo.username.length < 1) {
         throw Error('You are silence incarnate! Worship the Void! Just kidding, you have to give your name.')
       }
+      if (/^\s+$/.test(userInfo.pass)) {
+        throw Error(`This seal is just a piece of paper that says "I can do what I want!" Please either provide a Sponsor's Seal or proceed without one. (A password of only spaces will be REALLY hard to remember ;) )`)
+      }
       const firestoreDocRef = doc(firestore, "users", userInfo.username)
       const firestoreDocSnap = await getDoc(firestoreDocRef)
       if (firestoreDocSnap.exists()) {

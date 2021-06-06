@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { FlexDiv, RFC, Spacer, } from '../Common/helpfulComponents'
+import { FlexDiv, RFC, Spacer, StyledChatBubble } from '../Common/helpfulComponents'
 import Slide from '@material-ui/core/Slide'
 
 import { useHistory } from 'react-router-dom'
@@ -29,6 +29,7 @@ export const CentralRift = () => {
             <RFC axis='column' align='center' justify='flex-start' css='height: 100%;'>
 
             <StyledChatBubble>Welcome to Thracia's central Rift. We are preparing to send the next envoy. Please join your respective envoy and begin preparations for the transfer.</StyledChatBubble>
+            <Spacer spaceParam={10} />
             <StyledBigButton onClick={() => setLobbyPromptToggled(prev => !prev)}>
                 Rift Transfer
             </StyledBigButton>
@@ -87,8 +88,7 @@ const StyledInput = styled.input`
     color: ${ ({ theme }) => theme.colors.coolGrey[3] };
 `
 const StyledBigButton = styled.button`
-    position: fixed;
-    top: 18.5rem;
+    position: relative;
     min-width: 6rem;
     font-size: ${ ({ theme }) => theme.sizes['main']};
     width: auto;
@@ -97,36 +97,8 @@ const StyledBigButton = styled.button`
     }
 `
 const StyledButton = styled.button`
-    min-width: 4rem;
-    width: auto;
-`
-const StyledChatBubble = styled.div`
-    position: relative;
-	width: '80%';
-	text-align: center;
-	line-height: 1.4em;
-	background-color: ${ ({ theme }) => theme.colors.white };
-	border: ${ ({ theme }) => theme.sizes[3]} solid ${ ({ theme }) => theme.colors.coolGrey[3] };
-	border-radius: ${ ({ theme }) => theme.sizes[8]} ;
-	padding: ${ ({ theme }) => theme.sizes[6]} ;
-	font-size: ${ ({ theme }) => theme.sizes[6]} ;
-
-    &:before, &:after {
-        content: ' ';
-	    position: absolute;
-	    width: 0;
-	    height: 0;
-    }
-    &:before {
-        left: ${ ({ theme }) => theme.sizes[8]};
-	    bottom: -${ ({ theme }) => theme.sizes[10]};
-	    border: ${ ({ theme }) => theme.sizes[8]} solid;
-	    border-color: ${ ({ theme }) => theme.colors.coolGrey[3] } transparent transparent ${ ({ theme }) => theme.colors.coolGrey[3] };
-    }
-    &:after {
-        left: 2.25rem;
-	    bottom: -3.35rem;
-	    border: ${ ({ theme }) => theme.sizes[8]} solid;
-	    border-color: ${ ({ theme }) => theme.colors.white } transparent transparent ${ ({ theme }) => theme.colors.white };
-    }
+    min-width: 12rem;
+    width: 40%;
+    max-width: 18rem;
+    font-size: ${ ({ theme }) => theme.sizes[5]};
 `
