@@ -124,3 +124,35 @@ export const StyledChatBubble = styled.div`
         border-color: ${ ({ theme }) => theme.colors.white } transparent transparent ${ ({ theme }) => theme.colors.white };
     }
 `
+export const StyledCTABigButton = styled.button`
+    min-width: 12rem;
+    width: 40%;
+    max-width: 18rem;
+`
+export const StyledCTAButton = styled.button`
+    width: 60%;
+    min-width: ${ ({ theme }) => theme.sizes['main']};
+    max-width: 16rem;
+`
+export const StyledBackdrop = styled.div`
+    width: 100%;
+    height: 100%;
+    z-index: 4;
+    background: rgba(45,58,140, .5);
+    position: fixed;
+    top: 0;
+    right: 0;
+`
+export const StyledLobbyForm = styled.form`
+    border: solid ${ ({ theme }) => theme.sizes[1]} ${({ theme }) => theme.colors.coolGrey[5]};
+    border-radius: ${ ({ theme }) => theme.sizes[3]} 0 ${ ({ theme }) => theme.sizes[3]}0;
+    background-color: ${({ theme }) => theme.colors.white};
+    padding: ${ ({ theme }) => theme.sizes[4]};
+    width: 50%;
+    min-width: 300px;
+    max-width: 80%;
+    z-index: 5;
+    position: fixed;
+    top: 10rem;
+    margin: 0 auto;
+`

@@ -5,10 +5,11 @@ import { useHistory } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../Common/hooks'
 import { userLogin, newUserLogin, selectLoginStatus, selectLoginError } from '../features/database/databaseSlice'
 
-import { FlexDiv, RFC, Spacer, StyledChatBubble} from '../Common/helpfulComponents'
 import Slide from '@material-ui/core/Slide'
-import { styled } from '../Contexts/ThemeGlobalAndProvider'
-
+import { 
+    FlexDiv, RFC, Spacer, StyledChatBubble, StyledLobbyForm,
+    StyledCTAButton, StyledCTABigButton, StyledBackdrop
+} from '../Common/helpfulComponents'
 
 export const UserLogin = () => {
     const [existingUserIDPrompt, setExistingUserIDPrompt] = useState({username: '', pass: ''})
@@ -52,120 +53,74 @@ export const UserLogin = () => {
         <FlexDiv>
             <RFC axis='column' align='center' justify='flex-start' css='height: 100%;'>
 
-            <StyledChatBubble>{loginStatus === 'pending' ? `scribble scribble scratch scribble` : loginError ? loginError : `Hello! If you are a returning agent please check in with the Rift Overseer, otherwise speak with the Rift Coordinator to verify sponsorship and Rift Alignment capabilities.`}</StyledChatBubble>
-            <Spacer spaceParam={10} />
-            <StyledPortalOverseerButton onClick={() => setExistingUserIDPromptToggled(prev => !prev)}>
-                Rift Overseer <em>(login)</em>
-            </StyledPortalOverseerButton>
-            <Spacer spaceParam={5} />
-            <StyledRiftPermissionButton onClick={() => setNewUserIDPromptToggled(prev => !prev)}>
-                Rift Coordinator <em>(new user)</em>
-            </StyledRiftPermissionButton>
-            {existingUserIDPromptToggled && <StyledBackdrop onClick={() => setExistingUserIDPromptToggled(prev => !prev)} />}
-            <Slide in={existingUserIDPromptToggled} direction='up' mountOnEnter unmountOnExit>
-                <StyledLobbyForm onSubmit={(e) => {
-                        e.preventDefault()
-                        dispatch(userLogin(existingUserIDPrompt))
-                        setExistingUserIDPromptToggled(false)
-                        setNewUserIDPromptToggled(false)
-                        setExistingUserIDPrompt({username: '', pass: ''})
-                    }}>
-                    <RFC axis='column' align='center' css='width: 100%;'>
-                        <h1 style={{textAlign: 'center'}}>Please provide your Agent Code Name, and if applicable your Sponsor's Seal</h1>
-                        <Spacer />
-                        <span>Code Name <em>(username)</em></span>
-                        <StyledInput ref={existingUserPromptRefInput} type='text' value={existingUserIDPrompt.username} onChange={(e) => {
+                <StyledChatBubble>{loginStatus === 'pending' ? `scribble scribble scratch scribble` : loginError ? loginError : `Hello! Welcome to Thracia's Central Rift! If you are a returning agent please check in with the Rift Overseer, otherwise speak with the Rift Coordinator to verify sponsorship and Rift Alignment capabilities.`}</StyledChatBubble>
+                <Spacer spaceParam={10} />
+                <StyledCTABigButton onClick={() => setExistingUserIDPromptToggled(prev => !prev)}>
+                    Rift Overseer <em>(login)</em>
+                </StyledCTABigButton>
+                <Spacer spaceParam={5} />
+                <StyledCTABigButton onClick={() => setNewUserIDPromptToggled(prev => !prev)}>
+                    Rift Coordinator <em>(new user)</em>
+                </StyledCTABigButton>
+                {existingUserIDPromptToggled && <StyledBackdrop onClick={() => setExistingUserIDPromptToggled(prev => !prev)} />}
+                <Slide in={existingUserIDPromptToggled} direction='up' mountOnEnter unmountOnExit>
+                    <StyledLobbyForm onSubmit={(e) => {
                             e.preventDefault()
-                            setExistingUserIDPrompt(prev => ({...prev, username: e.target.value}))
-                        }} />
-                        <Spacer />
-                        <span>Sponsor's Seal <em>(password ?)</em></span>
-                        <StyledInput type='text' value={existingUserIDPrompt.pass} onChange={(e) => {
+                            dispatch(userLogin(existingUserIDPrompt))
+                            setExistingUserIDPromptToggled(false)
+                            setNewUserIDPromptToggled(false)
+                            setExistingUserIDPrompt({username: '', pass: ''})
+                        }}>
+                        <RFC axis='column' align='center' css='width: 100%;'>
+                            <h1 style={{textAlign: 'center'}}>Please provide your Agent Code Name, and if applicable your Sponsor's Seal</h1>
+                            <Spacer />
+                            <span>Code Name <em>(username)</em></span>
+                            <input ref={existingUserPromptRefInput} type='text' value={existingUserIDPrompt.username} onChange={(e) => {
+                                e.preventDefault()
+                                setExistingUserIDPrompt(prev => ({...prev, username: e.target.value}))
+                            }} />
+                            <Spacer />
+                            <span>Sponsor's Seal <em>(password ?)</em></span>
+                            <input type='text' value={existingUserIDPrompt.pass} onChange={(e) => {
+                                e.preventDefault()
+                                setExistingUserIDPrompt(prev => ({...prev, pass: e.target.value}))
+                            }} />
+                            <Spacer />
+                            <StyledCTAButton>Confirm</StyledCTAButton>
+                        </RFC>
+                    </StyledLobbyForm>
+                </Slide>
+                {newUserIDPromptToggled && <StyledBackdrop onClick={() => setNewUserIDPromptToggled(prev => !prev)} />}
+                <Slide in={newUserIDPromptToggled} direction='up' mountOnEnter unmountOnExit>
+                    <StyledLobbyForm onSubmit={(e) => {
                             e.preventDefault()
-                            setExistingUserIDPrompt(prev => ({...prev, pass: e.target.value}))
-                        }} />
-                        <Spacer />
-                        <StyledButton>Confirm</StyledButton>
-                    </RFC>
-                </StyledLobbyForm>
-            </Slide>
-            {newUserIDPromptToggled && <StyledBackdrop onClick={() => setNewUserIDPromptToggled(prev => !prev)} />}
-            <Slide in={newUserIDPromptToggled} direction='up' mountOnEnter unmountOnExit>
-                <StyledLobbyForm onSubmit={(e) => {
-                        e.preventDefault()
-                        dispatch(newUserLogin(newUserIDPrompt))
-                        setExistingUserIDPromptToggled(false)
-                        setNewUserIDPromptToggled(false)
-                        setNewUserIDPrompt({username: '', pass: ''})
-                    }}>
-                    <RFC axis='column' align='center' css='width: 100%;'>
-                        <h1 style={{textAlign: 'center'}}>Please provide your Agent Code Name and your Sponsor's Seal</h1>
-                        <Spacer />
-                        <span>Code Name <em>(username)</em></span>
-                        <StyledInput ref={newUserPromptRefInput} type='text' value={newUserIDPrompt.username} onChange={(e) => {
-                            e.preventDefault()
-                            setNewUserIDPrompt(prev => ({...prev, username: e.target.value, }))
-                        }} />
-                        <Spacer />
-                        <span>Seal <em>(password optional)</em></span>
-                        <StyledInput type='text' value={newUserIDPrompt.pass} onChange={(e) => {
-                            e.preventDefault()
-                            setNewUserIDPrompt(prev => ({...prev, pass: e.target.value, }))
-                        }} />
-                        <Spacer />
-                        <StyledButton>Verify Rift Alignment</StyledButton>
-                    </RFC>
-                </StyledLobbyForm>
-            </Slide>
+                            dispatch(newUserLogin(newUserIDPrompt))
+                            setExistingUserIDPromptToggled(false)
+                            setNewUserIDPromptToggled(false)
+                            setNewUserIDPrompt({username: '', pass: ''})
+                        }}>
+                        <RFC axis='column' align='center' css='width: 100%;'>
+                            <h1 style={{textAlign: 'center'}}>Please provide your Agent Code Name and your Sponsor's Seal</h1>
+                            <Spacer />
+                            <span>Code Name <em>(username)</em></span>
+                            <input ref={newUserPromptRefInput} type='text' value={newUserIDPrompt.username} onChange={(e) => {
+                                e.preventDefault()
+                                setNewUserIDPrompt(prev => ({...prev, username: e.target.value, }))
+                            }} />
+                            <Spacer />
+                            <span>Seal <em>(password optional)</em></span>
+                            <input type='text' value={newUserIDPrompt.pass} onChange={(e) => {
+                                e.preventDefault()
+                                setNewUserIDPrompt(prev => ({...prev, pass: e.target.value, }))
+                            }} />
+                            <Spacer />
+                            <StyledCTAButton>Verify Rift Alignment</StyledCTAButton>
+                        </RFC>
+                    </StyledLobbyForm>
+                </Slide>
             </RFC>
         </FlexDiv>
     )
 }
-const StyledBackdrop = styled.div`
-    width: 100%;
-    height: 100%;
-    z-index: 4;
-    background: rgba(45,58,140, .5);
-    position: fixed;
-    top: 0;
-    right: 0;
-`
-const StyledLobbyForm = styled.form`
-    border: solid ${ ({ theme }) => theme.sizes[1]} ${({ theme }) => theme.colors.coolGrey[5]};
-    border-radius: ${ ({ theme }) => theme.sizes[3]} 0 ${ ({ theme }) => theme.sizes[3]}0;
-    background-color: ${({ theme }) => theme.colors.white};
-    padding: ${ ({ theme }) => theme.sizes[4]};
-    width: 50%;
-    min-width: 300px;
-    max-width: 80%;
-    z-index: 5;
-    position: fixed;
-    top: 10rem;
-    margin: 0 auto;
-`
-const StyledInput = styled.input`
-    width: 60%;
-    min-width: ${ ({ theme }) => theme.sizes['main']};
-    max-width: 16rem;
-    font-size: ${ ({ theme }) => theme.sizes['main']};
-    color: ${ ({ theme }) => theme.colors.coolGrey[3] };
-`
-const StyledPortalOverseerButton = styled.button`
-    min-width: 12rem;
-    width: 40%;
-    max-width: 18rem;
-    font-size: ${ ({ theme }) => theme.sizes[5]};
-`
-const StyledRiftPermissionButton = styled.button`
-    min-width: 12rem;
-    width: 40%;
-    max-width: 18rem;
-    font-size: ${ ({ theme }) => theme.sizes[5]};
-`
-const StyledButton = styled.button`
-    width: 60%;
-    min-width: ${ ({ theme }) => theme.sizes['main']};
-    max-width: 16rem;
-    font-size: ${ ({ theme }) => theme.sizes[5]};
-    text-transform: uppercase;
-`
+
+

@@ -87,7 +87,11 @@ export const ThemeGlobalStyle = createGlobalStyle<{theme: ThemeType}>`
 
     input {
         border: solid ${({theme}) => theme.sizes[1]} ${({theme}) => theme.colors.coolGrey[4]};
-        max-width: ${ ({ theme }) => theme.sizes['medium']};
+        width: 60%;
+        min-width: ${ ({ theme }) => theme.sizes['main']};
+        max-width: 16rem;
+        font-size: ${ ({ theme }) => theme.sizes['main']};
+        color: ${ ({ theme }) => theme.colors.coolGrey[3] };
         &:focus {
             border: solid ${({theme}) => theme.sizes[1]} ${({theme}) => theme.colors.primary[7]};
         }
@@ -106,6 +110,7 @@ export const ThemeGlobalStyle = createGlobalStyle<{theme: ThemeType}>`
         font-size: ${ ({ theme }) => theme.sizes[5]};
         font-weight: 600;
         border-radius: ${ ({ theme }) => theme.sizes[3]};
+
         &:active, &:hover {
             background: ${ ({theme}) => theme.colors.primary[4] };
         }

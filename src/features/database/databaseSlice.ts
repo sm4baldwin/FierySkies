@@ -1,14 +1,14 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState, AppThunk, AppDispatch } from '../../store'
 import { firestore, realtimeDB } from '../../firebaseConfig'
-import { doc, getDoc, setDoc, onSnapshot, } from "firebase/firestore"
+import { doc, getDoc, setDoc, onSnapshot, runTransaction } from "firebase/firestore"
 import { ref, set, onValue, onDisconnect, serverTimestamp } from "firebase/database"
-import { inRoom, makeLobbyCreator, login } from '../user/userSlice'
+import { makeLobbyCreator, login } from '../user/userSlice'
 
 export interface Idatabase {
   data: {
     room: {
-      id: string,
+      id: string | undefined,
       players: Array<{name: string}>,
       viewers: Array<string>
     }
@@ -21,7 +21,7 @@ export interface Idatabase {
 const initialState: Idatabase = {
   data: {
     room: {
-      id: '',
+      id: undefined,
       players: [],
       viewers: []
     }
@@ -31,24 +31,36 @@ const initialState: Idatabase = {
   joinRoomStatus: 'idle',
   joinRoomError: undefined,
 }
-
 export const joinRoom = createAsyncThunk<any, any, {dispatch: AppDispatch, state: RootState}>(
   'database/joinRoom',
   async (roomID: string, {dispatch, getState}) => {
+    const state = getState()
+    const displayName = state.user.data.userInfo.playerTag ? state.user.data.userInfo.playerTag : state.user.data.userInfo.username
     const docRef = doc(firestore, "lobbies", roomID)
     const docSnap = await getDoc(docRef)
-    
     if (docSnap.exists()) {
-      console.log("Joining existing lobby!")
-      await setDoc(docRef, {newPlayer: 'Stephen'}, { merge: true })
+      try {
+        await runTransaction(firestore, async (transaction) => {
+          let members = docSnap.data().members
+          let newMembers = {...members, players: [...members.players, displayName]}
+          transaction.update(docRef, { members: newMembers})
+          transaction.update(doc(firestore, "users", state.user.data.userInfo.username !== undefined ? state.user.data.userInfo.username : 'default'), {activeLobby: roomID})
+        })
+      } catch (error) {
+        return error.message
+      }
+
     } else {
-      // doc.data() will be undefined in this case
-      console.log("Creating new lobby!")
-      const state = getState()
-      await setDoc(docRef, {lobbyCreator: state.user.data.userInfo.playerTag ? state.user.data.userInfo.playerTag : 'default'})
+      try {
+        await runTransaction(firestore, async (transaction) => {
+          transaction.set(docRef, {envoyRepresentative: displayName, members: {players: [displayName], viewers: []}})
+          transaction.update(doc(firestore, "users", state.user.data.userInfo.username !== undefined ? state.user.data.userInfo.username : 'default'), {activeLobby: roomID})
+        })
+      } catch (error) {
+        return error.message
+      }
       dispatch(makeLobbyCreator())
     }
-    dispatch(inRoom(true))
     return roomID
   }
 )
@@ -209,7 +221,7 @@ export const startRoomListener = (): AppThunk => (dispatch, getState) => {
   const { database } = getState()
   const roomID = database.data.room.id
 
-  const unsubscribe = onSnapshot(doc(firestore, "lobbies", roomID), (doc) => {
+  const unsubscribe = onSnapshot(doc(firestore, "lobbies", roomID ? roomID : ''), (doc) => {
     const roomData = doc.data()
     if (roomData && roomData.members) {
       dispatch(updateRoomPlayers(roomData.members.players))
