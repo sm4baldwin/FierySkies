@@ -42,9 +42,12 @@ export const userSlice = createSlice({
     makeLobbyCreator: (state) => {
       state.data.lobbyCreator = true
     },
-    login: (state, action: PayloadAction<{username: string, pass: string | ''}>) => {
+    login: (state, action: PayloadAction<{username: string, pass: string | '', activeLobby: string | undefined, activeGames: Array<{gameID: string, gameStarted: Timestamp}>, playerTag: string | undefined}>) => {
       state.data.userInfo.username = action.payload.username
       state.data.userInfo.pass = action.payload.pass
+      state.data.userInfo.activeLobby = action.payload.activeLobby
+      state.data.userInfo.activeGames = action.payload.activeGames
+      state.data.userInfo.playerTag = action.payload.playerTag
     }
   },
 })

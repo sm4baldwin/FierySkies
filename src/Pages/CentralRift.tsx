@@ -42,7 +42,13 @@ export const CentralRift = () => {
                         setLobbyPrompt('')
                     }}>
                     <RFC axis='column' align='center' css='width: 100%;'>
-                        <h1 style={{textAlign: 'center'}}>Please enter the name of the envoy with which you will transfer</h1>
+                        {userInfo.activeLobby && <><h1 style={{textAlign: 'center'}}>It seems like you already have an envoy waiting for you, would you like to rejoin '{userInfo.activeLobby}'?</h1>
+                        <Spacer />
+                        <StyledCTAButton type='button' onClick={() => dispatch(joinRoom(userInfo.activeLobby))}>Rejoin Envoy</StyledCTAButton>
+                        <Spacer />
+                        </>
+                        }
+                        <h1 style={{textAlign: 'center'}}>{userInfo.activeLobby ? `Or please,` : `Please`} enter the name of the envoy with which you will transfer</h1>
                         <Spacer />
 
                         <span>Envoy waiting room</span>

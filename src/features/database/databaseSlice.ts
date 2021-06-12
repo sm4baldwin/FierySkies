@@ -9,8 +9,8 @@ export interface Idatabase {
   data: {
     room: {
       id: string | undefined,
-      players: Array<{name: string}>,
-      viewers: Array<string>
+      players: Array<{displayName: string, userName: string}>,
+      viewers: Array<{displayName: string, userName: string}>
     }
   }
   loginStatus: 'idle' | 'pending' | 'succeeded' | 'failed',
@@ -41,10 +41,18 @@ export const joinRoom = createAsyncThunk<any, any, {dispatch: AppDispatch, state
     if (docSnap.exists()) {
       try {
         await runTransaction(firestore, async (transaction) => {
-          let members = docSnap.data().members
-          let newMembers = {...members, players: [...members.players, displayName]}
-          transaction.update(docRef, { members: newMembers})
-          transaction.update(doc(firestore, "users", state.user.data.userInfo.username !== undefined ? state.user.data.userInfo.username : 'default'), {activeLobby: roomID})
+          let members: {players: Array<{displayName: string, userName: string}>, viewers: Array<{displayName: string, userName: string}>} = docSnap.data().members
+          let check = true
+          members.players.forEach(player => {
+            if (player.userName === state.user.data.userInfo.username) {
+              check = false
+            }
+          })
+          if (check) {
+            let newMembers = {...members, players: [...members.players, {displayName: displayName, userName: state.user.data.userInfo.username}]}
+            transaction.update(docRef, { members: newMembers})
+            transaction.update(doc(firestore, "users", state.user.data.userInfo.username !== undefined ? state.user.data.userInfo.username : 'default'), {activeLobby: roomID})
+          }
         })
       } catch (error) {
         return error.message
@@ -53,7 +61,7 @@ export const joinRoom = createAsyncThunk<any, any, {dispatch: AppDispatch, state
     } else {
       try {
         await runTransaction(firestore, async (transaction) => {
-          transaction.set(docRef, {envoyRepresentative: displayName, members: {players: [displayName], viewers: []}})
+          transaction.set(docRef, {envoyRepresentative: displayName, members: {players: [{displayName: displayName, userName: state.user.data.userInfo.username}], viewers: []}})
           transaction.update(doc(firestore, "users", state.user.data.userInfo.username !== undefined ? state.user.data.userInfo.username : 'default'), {activeLobby: roomID})
         })
       } catch (error) {
@@ -101,7 +109,11 @@ export const userLogin = createAsyncThunk<any, any, {dispatch: AppDispatch, stat
           setDoc(firestoreDocRef, {connectionStatus: 'online'}, { merge: true })
         })
       })
-      dispatch(login(userInfo))
+      dispatch(login({...userInfo, 
+        activeLobby: firestoreDocSnap.data().activeLobby ? firestoreDocSnap.data().activeLobby : undefined,
+        activeGames: firestoreDocSnap.data().activeGames ? firestoreDocSnap.data().activeGames.length > 0 ? firestoreDocSnap.data().activeGames : undefined : undefined,
+        playerTag: firestoreDocSnap.data().playerTag ? firestoreDocSnap.data().playerTag : ''
+      }))
     } catch (error) {
       return rejectWithValue(error.message)
     }
@@ -122,7 +134,7 @@ export const newUserLogin = createAsyncThunk<any, any, {dispatch: AppDispatch, s
       if (firestoreDocSnap.exists()) {
         throw Error(`We seem to already have you listed in our records ... interesting. Perhaps you mispoke? Hmmmm?`)
       } else {
-        await setDoc(firestoreDocRef, {username: userInfo.username, password: userInfo.pass, connectionStatus: 'online'})
+        await setDoc(firestoreDocRef, {username: userInfo.username, password: userInfo.pass, connectionStatus: 'online', activeLobby: '', activeGames: [], playerTag: ''})
         const realtimeDBuserRef = ref(realtimeDB, 'users/' + userInfo.username)
         await set(realtimeDBuserRef, {connectionStatus: 'offline'})
         const infoConnectedRef = ref(realtimeDB,'.info/connected')
@@ -145,7 +157,7 @@ export const newUserLogin = createAsyncThunk<any, any, {dispatch: AppDispatch, s
             setDoc(firestoreDocRef, {connectionStatus: 'online'}, { merge: true })
           })
         })
-        dispatch(login(userInfo))
+        dispatch(login({...userInfo, activeLobby: undefined, activeGames: [], playerTag: ''}))
       }
     } catch (error) {
       return rejectWithValue(error.message)
@@ -158,10 +170,10 @@ export const databaseSlice = createSlice({
   initialState,
   // The `reducers` field lets us define reducers and generate associated actions
   reducers: {
-    updateRoomPlayers: (state, action: PayloadAction<Array<{name: string}>>) => {
+    updateRoomPlayers: (state, action: PayloadAction<Array<{displayName: string, userName: string}>>) => {
       state.data.room.players = action.payload
     },
-    updateRoomViewers: (state, action: PayloadAction<Array<string>>) => {
+    updateRoomViewers: (state, action: PayloadAction<Array<{displayName: string, userName: string}>>) => {
       state.data.room.viewers = action.payload
     },
   },
