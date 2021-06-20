@@ -4,7 +4,10 @@ import { RootState } from '../../store'
 
 export interface Iuser {
   data: {
-    inGame: boolean,
+    gameMetaData: {
+      gameID: string | undefined,
+      gameType: string | undefined,
+    },
     lobbyCreator: boolean,
     userInfo: 
       {
@@ -22,7 +25,10 @@ export interface Iuser {
 
 const initialState: Iuser = {
   data: {
-    inGame: false,
+    gameMetaData: {
+      gameID: undefined,
+      gameType: undefined
+    },
     lobbyCreator: false,
     userInfo: {
       username: undefined,
@@ -48,16 +54,19 @@ export const userSlice = createSlice({
       state.data.userInfo.activeLobby = action.payload.activeLobby
       state.data.userInfo.activeGames = action.payload.activeGames
       state.data.userInfo.playerTag = action.payload.playerTag
+    },
+    enterGame: (state, action: PayloadAction<string>) => {
+      state.data.gameMetaData.gameID = action.payload
     }
   },
 })
 
-export const { makeLobbyCreator, login } = userSlice.actions
+export const { makeLobbyCreator, login, enterGame } = userSlice.actions
 
 // The function below is called a selector and allows us to select a value from
 // the state. Selectors can also be defined inline where they're used instead of
 // in the slice file. For example: `useSelector((state: RootState) => state.counter.value)`
 export const selectLobbyCreator = (state: RootState) => state.user.data.lobbyCreator
 export const selectUserInfo = (state: RootState) => state.user.data.userInfo
-
+export const selectGameMetaData = (state: RootState) => state.user.data.gameMetaData
 export default userSlice.reducer;

@@ -1,11 +1,9 @@
 import React, { useEffect } from 'react'
-import { FlexDiv, RFC, Spacer, } from '../Common/helpfulComponents'
+import { FlexDiv, RFC, Spacer, StyledCTABigButton, StyledChatBubble } from '../Common/helpfulComponents'
 
 import { useAppSelector, useAppDispatch,  } from '../Common/hooks'
-import { selectRoomInfo, startRoomListener, selectRoomMemberCount } from '../features/database/databaseSlice'
+import { selectRoomInfo, startRoomListener, selectRoomMemberCount, startGame } from '../features/database/databaseSlice'
 import { selectLobbyCreator } from '../features/user/userSlice'
-
-import { styled } from '../Contexts/ThemeGlobalAndProvider'
 
 export const DepartureZone = () => {
 
@@ -46,38 +44,10 @@ export const DepartureZone = () => {
                         })}
                     </RFC>}
                 </RFC>
+                <Spacer spaceParam={6} />
+                {lobbyCreator && <StyledCTABigButton onClick={() => {dispatch(startGame(""))}}>Begin Missions</StyledCTABigButton>}
             </RFC>
         </FlexDiv>
     )
 }
 
-const StyledChatBubble = styled.div`
-    position: relative;
-	width: '80%';
-	text-align: center;
-	line-height: 1.4em;
-	background-color: ${ ({ theme }) => theme.colors.white };
-	border: ${ ({ theme }) => theme.sizes[3]} solid ${ ({ theme }) => theme.colors.coolGrey[3] };
-	border-radius: ${ ({ theme }) => theme.sizes[8]} ;
-	padding: ${ ({ theme }) => theme.sizes[6]} ;
-	font-size: ${ ({ theme }) => theme.sizes[6]} ;
-
-    &:before, &:after {
-        content: ' ';
-	    position: absolute;
-	    width: 0;
-	    height: 0;
-    }
-    &:before {
-        left: ${ ({ theme }) => theme.sizes[8]};
-	    bottom: -${ ({ theme }) => theme.sizes[10]};
-	    border: ${ ({ theme }) => theme.sizes[8]} solid;
-	    border-color: ${ ({ theme }) => theme.colors.coolGrey[3] } transparent transparent ${ ({ theme }) => theme.colors.coolGrey[3] };
-    }
-    &:after {
-        left: 2.25rem;
-	    bottom: -3.35rem;
-	    border: ${ ({ theme }) => theme.sizes[8]} solid;
-	    border-color: ${ ({ theme }) => theme.colors.white } transparent transparent ${ ({ theme }) => theme.colors.white };
-    }
-`

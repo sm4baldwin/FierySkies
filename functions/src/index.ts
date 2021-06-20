@@ -33,6 +33,29 @@ exports.createLobby = functions.firestore.document("lobbies/{lobbyID}")
     }
 })
 
+exports.updateUsersActiveGame = functions.firestore.document("lobbies/{lobbyID}").onSnapshot((snap: any) => {
+    const data = snap.data()
+    if (data && data.gameID) {
+        let promises = []
+        for (let player of data.members.players) {
+            const promiseP = firestore.doc(`users/${player.userName}`).update(
+                {activeGame: data.gameID}
+            )
+            promises.push(promiseP)
+        }
+        for (let viewer of data.members.viewers) {
+            const promiseV = firestore.doc(`users/${viewer.userName}`).update(
+                {viewingGame: data.gameID}
+            )
+            promises.push(promiseV)
+        }
+        return Promise.all(promises)
+    }
+    else {
+        return null
+    }
+})
+
 exports.onUserConnectionStatusChanged = functions.database.ref('/users/{uid}').onUpdate(
     async (change: any, context: any) => {
       // Get the data written to Realtime Database

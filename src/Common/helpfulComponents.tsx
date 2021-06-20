@@ -100,10 +100,13 @@ export const StyledChatBubble = styled.div`
     border: ${ ({ theme }) => theme.sizes[3]} solid ${ ({ theme }) => theme.colors.coolGrey[3] };
     border-radius: ${ ({ theme }) => theme.sizes[8]} ;
     padding: ${ ({ theme }) => theme.sizes[6]} ;
-    font-size: ${ ({ theme }) => theme.sizes[6]} ;
+    font-size: ${ ({ theme }) => theme.sizes['main']} ;
     font-weight: 500;
     letter-spacing: 0.05em;
     color: ${ ({ theme }) => theme.colors.coolGrey[3]};
+    @media ${({theme}) => theme.breakpoints.mediaQueries.laptop} {
+            font-size: ${ ({ theme }) => theme.sizes[6]};
+        }
 
     &:before, &:after {
         content: ' ';

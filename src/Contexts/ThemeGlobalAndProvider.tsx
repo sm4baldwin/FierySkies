@@ -128,11 +128,11 @@ export const ThemeGlobalStyle = createGlobalStyle<{theme: ThemeType}>`
     }
 
     h1 {
-        font-size: ${ ({ theme }) => theme.sizes[6]};
+        font-size: ${ ({ theme }) => theme.sizes['main']};
         font-weight: 500;
         padding: 0;
         @media ${({theme}) => theme.breakpoints.mediaQueries.laptop} {
-            font-size: ${ ({ theme }) => theme.sizes[7]};
+            font-size: ${ ({ theme }) => theme.sizes[6]};
         }
     }
 

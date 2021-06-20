@@ -1,9 +1,9 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState, AppThunk, AppDispatch } from '../../store'
 import { firestore, realtimeDB } from '../../firebaseConfig'
-import { doc, getDoc, setDoc, onSnapshot, runTransaction } from "firebase/firestore"
+import { doc, addDoc, getDoc, setDoc, onSnapshot, runTransaction, collection } from "firebase/firestore"
 import { ref, set, onValue, onDisconnect, serverTimestamp } from "firebase/database"
-import { makeLobbyCreator, login } from '../user/userSlice'
+import { makeLobbyCreator, login, enterGame } from '../user/userSlice'
 
 export interface Idatabase {
   data: {
@@ -164,6 +164,20 @@ export const newUserLogin = createAsyncThunk<any, any, {dispatch: AppDispatch, s
     }
   }
 )
+export const startGame = createAsyncThunk<any, any, {dispatch: AppDispatch, state: RootState}>(
+  'database/startGame',
+  async (_, {dispatch, getState}) => {
+    const state = getState()
+    const roomID = state.user.data.userInfo.activeLobby ? state.user.data.userInfo.activeLobby : 'no active room'
+    const docRef = await addDoc(collection(firestore, "games"), {
+      started: Date(),
+      type: "default",
+      phase: 'loadout',
+      players: state.database.data.room.players
+    })
+    await setDoc(doc(firestore, "lobbies", roomID), {gameID: docRef.id}, {merge: true})
+  }
+)
 
 export const databaseSlice = createSlice({
   name: 'database',
@@ -230,7 +244,7 @@ export const selectJoinRoomError = (state: RootState) => state.database.joinRoom
 export default databaseSlice.reducer
 
 export const startRoomListener = (): AppThunk => (dispatch, getState) => {
-  const { database } = getState()
+  const { database, user } = getState()
   const roomID = database.data.room.id
 
   const unsubscribe = onSnapshot(doc(firestore, "lobbies", roomID ? roomID : ''), (doc) => {
@@ -238,6 +252,12 @@ export const startRoomListener = (): AppThunk => (dispatch, getState) => {
     if (roomData && roomData.members) {
       dispatch(updateRoomPlayers(roomData.members.players))
       dispatch(updateRoomViewers(roomData.members.viewers))
+    }
+    if (roomData && roomData.gameID) {
+      dispatch(enterGame(roomData.gameID))
+    }
+    if (roomData && !user.data.lobbyCreator && roomData.envoyRepresentative === user.data.userInfo.username) {
+      dispatch(makeLobbyCreator())
     }
   })
 
