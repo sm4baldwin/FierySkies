@@ -45,7 +45,13 @@ export const DepartureZone = () => {
                     </RFC>}
                 </RFC>
                 <Spacer spaceParam={6} />
-                {lobbyCreator && <StyledCTABigButton onClick={() => {dispatch(startGame(""))}}>Begin Missions</StyledCTABigButton>}
+                {lobbyCreator && <StyledCTABigButton onClick={() => {
+                    if (roomInfo.gameID) {
+                        alert('game already started')
+                    } else {
+                        dispatch(startGame(""))
+                    }
+                }}>{roomInfo.gameID ? `Return through Portal`: `Begin Missions`}</StyledCTABigButton>}
             </RFC>
         </FlexDiv>
     )

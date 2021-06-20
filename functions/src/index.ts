@@ -13,18 +13,7 @@ exports.createLobby = functions.firestore.document("lobbies/{lobbyID}")
     if (data) {
         let timeCreated = new Date()
         const initialLobbyInfo = {
-            envoyRepresentative: data.lobbyCreator,
-            gameMeta: {
-                gameID: "default",
-                gameStarted: false,
-                gameMode: 'default'
-            },
-            members: {
-                players: [
-                    data.lobbyCreator
-                ],
-                viewers: [],
-            },
+            gameType: 'default',
             lobbyCreated: timeCreated.getTime()
         }
         return snap.ref.update(initialLobbyInfo)
@@ -33,15 +22,16 @@ exports.createLobby = functions.firestore.document("lobbies/{lobbyID}")
     }
 })
 
-exports.updateUsersActiveGame = functions.firestore.document("lobbies/{lobbyID}").onSnapshot((snap: any) => {
-    const data = snap.data()
-    if (data && data.gameID) {
+exports.updateUsersActiveGame = functions.firestore.document("lobbies/{lobbyID}").onUpdate((change: any, context: any) => {
+    let data = change.after.data()
+    if (!change.before.data().gameID && data.gameID) {
         let promises = []
         for (let player of data.members.players) {
             const promiseP = firestore.doc(`users/${player.userName}`).update(
                 {activeGame: data.gameID}
             )
             promises.push(promiseP)
+            console.log("this ran")
         }
         for (let viewer of data.members.viewers) {
             const promiseV = firestore.doc(`users/${viewer.userName}`).update(
